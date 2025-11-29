@@ -1,0 +1,1408 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TVK Sawmill Management - Mobile Ready (Cloud)</title>
+    <style>
+        /* BASE STYLES */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+            background-color: #ecf0f1; /* Light Gray Background */
+            color: #34495e;
+            transition: all 0.3s ease; /* For potential main content shifts */
+        }
+        
+        /* SIDEBAR & NAVIGATION (DESKTOP) */
+        #sidebar {
+            width: 250px;
+            background-color: #2c3e50; /* Dark Primary Color */
+            color: white;
+            padding: 20px 0;
+            box-shadow: 3px 0 10px rgba(0, 0, 0, 0.15);
+            flex-shrink: 0;
+            z-index: 1000; /* Ensure it stays above content */
+        }
+        #header-name {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #e74c3c; /* Bright Red */
+            padding: 0 20px 20px 20px;
+            border-bottom: 1px solid #34495e;
+            margin-bottom: 15px;
+        }
+        #nav-menu a {
+            display: block;
+            padding: 15px 20px;
+            text-decoration: none;
+            color: #ecf0f1;
+            border-left: 5px solid transparent;
+            transition: background-color 0.3s, border-left-color 0.3s, color 0.3s;
+        }
+        #nav-menu a:hover {
+            background-color: #34495e;
+            color: white;
+        }
+        #nav-menu a.active {
+            background-color: #34495e;
+            border-left-color: #e74c3c; /* Red active indicator */
+            font-weight: 600;
+        }
+
+        /* MOBILE MENU TOGGLE BUTTON */
+        #menu-toggle {
+            display: none; /* Hidden by default on Desktop */
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001; /* Above sidebar */
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.2em;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* MOBILE BACKDROP OVERLAY */
+        #mobile-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            transition: opacity 0.3s ease;
+        }
+        
+        /* MAIN CONTENT */
+        #main-content {
+            flex-grow: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+        h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #bdc3c7;
+            padding-bottom: 10px;
+            margin-top: 0;
+            font-size: 1.8em;
+        }
+        h3 {
+            color: #34495e;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        /* CARD & TABLE STYLING */
+        .card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+        }
+        .dashboard-table, #daybook-data, #ledger-details, #parties-list, #wages-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background-color: white;
+        }
+        .dashboard-table th, .dashboard-table td, 
+        #daybook-data th, #daybook-data td,
+        #ledger-details th, #ledger-details td,
+        #parties-list th, #parties-list td,
+        #wages-table th, #wages-table td {
+            border: 1px solid #ecf0f1; 
+            padding: 12px 15px;
+            text-align: left;
+        }
+        /* Daybook action column width adjustment */
+        #daybook-data th:last-child {
+            width: 80px; 
+            text-align: center;
+        }
+        
+        .dashboard-table th, #daybook-data th, #ledger-details th, #parties-list th, #wages-table th {
+            background-color: #f1f5f8; 
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        /* Zebra Stripping */
+        .dashboard-table tbody tr:nth-child(even),
+        #daybook-data tbody tr:nth-child(even),
+        #ledger-details tbody tr:nth-child(even),
+        #wages-table tbody tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+
+        /* FORM & INPUT STYLING (Responsive adjustments) */
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 600; color: #34495e; }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus, .form-group select:focus { border-color: #3498db; outline: none; }
+        
+        /* Date Range for Labour Wages */
+        #date-range-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f4f7f9;
+            border-radius: 8px;
+        }
+        #date-range-controls .form-group {
+            flex: 1 1 200px;
+            margin-bottom: 0;
+        }
+
+
+        /* BUTTON STYLING */
+        .button-primary {
+            background-color: #2c3e50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+        .button-primary:hover { background-color: #e74c3c; }
+        .button-delete {
+            background-color: #e74c3c;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        .button-delete:hover { background-color: #c0392b; }
+        
+        /* Ledger/Wages Specific Styling */
+        .balance-positive {
+            color: #27ae60; 
+            font-size: 1.4em;
+        }
+        .balance-negative {
+            color: #e74c3c; 
+            font-size: 1.4em;
+        }
+        
+        /* Profit/Loss Display */
+        #profit-loss-display {
+            font-size: 2.5em;
+            font-weight: 700;
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .profit {
+            background-color: #27ae60; /* Green */
+        }
+        .loss {
+            background-color: #e74c3c; /* Red */
+        }
+        .zero-balance {
+            background-color: #7f8c8d; /* Gray */
+        }
+
+        .view {
+            display: none;
+        }
+
+        /* Parties list table style */
+        #parties-list button {
+            padding: 5px 10px; 
+            font-size: 0.8em; 
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        
+        /* --- MOBILE SPECIFIC STYLES (Max Width 768px) --- */
+        @media (max-width: 768px) {
+            
+            body {
+                flex-direction: column;
+            }
+
+            /* Show the menu button */
+            #menu-toggle {
+                display: block;
+            }
+
+            /* Hide sidebar off-screen by default */
+            #sidebar {
+                position: fixed;
+                height: 100%;
+                top: 0;
+                left: -250px; /* Hidden off screen */
+                transition: left 0.3s ease-in-out;
+                box-shadow: 5px 0 15px rgba(0, 0, 0, 0.3);
+            }
+
+            /* When the sidebar is open, slide it in */
+            body.sidebar-open #sidebar {
+                left: 0;
+            }
+            
+            /* Show backdrop when menu is open */
+            body.sidebar-open #mobile-backdrop {
+                display: block;
+            }
+            
+            /* Adjust padding on main content for mobile */
+            #main-content {
+                padding: 70px 15px 15px 15px; /* Added space at the top for the fixed menu button */
+            }
+
+            /* Adjust table layout for smaller screens */
+            .dashboard-table, #daybook-data, #ledger-details, #parties-list, #wages-table {
+                display: block;
+                width: 100%;
+                overflow-x: auto; /* Allows horizontal scrolling for large tables */
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            /* Shrink padding in tables slightly */
+            .dashboard-table th, .dashboard-table td, 
+            #daybook-data th, #daybook-data td,
+            #ledger-details th, #ledger-details td,
+            #parties-list th, #parties-list td,
+            #wages-table th, #wages-table td {
+                padding: 8px 10px;
+            }
+
+            #date-range-controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    
+    <button id="menu-toggle" aria-label="Toggle Menu">☰ Menu</button>
+    
+    <div id="mobile-backdrop"></div>
+
+    <div id="sidebar">
+        <div id="header-name">TVK Sawmill (Cloud)</div>
+        <nav id="nav-menu">
+            <a href="#" data-view="dashboard" class="nav-item active">📊 Dash</a>
+            <a href="#" data-view="daybook" class="nav-item">📒 Daybook</a>
+            <a href="#" data-view="ledger" class="nav-item">📜 Ledger</a>
+            <a href="#" data-view="labour-wages" class="nav-item">💰 Labour Wages</a>
+            <a href="#" data-view="parties" class="nav-item">👥 Parties</a>
+        </nav>
+    </div>
+
+    <div id="main-content">
+
+        <div id="dashboard" class="view active">
+            <h2>📊 Dashboard</h2>
+            
+            <h3 id="profit-loss-display" class="zero-balance">Loading P/L...</h3>
+
+            <button onclick="printDashboard()" class="button-primary" style="margin-bottom: 20px;">
+                ⬇️ Download/Print Dashboard
+            </button>
+
+            <div class="card">
+                <h3>Cash/Bank Balances</h3>
+                <table class="dashboard-table" id="owner-bank-balances">
+                    <thead>
+                        <tr><th>Account</th><th>Balance (₹)</th></tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+
+            <form id="stock-form" class="card">
+                <h3>Stock Amount (Asset)</h3>
+                <div class="form-group">
+                    <label for="stock-amount-input">Current Value of Inventory/Stock (₹):</label>
+                    <input type="number" id="stock-amount-input" step="any" min="0" value="0" required>
+                </div>
+                <button type="submit" class="button-primary">Save Stock Value</button>
+            </form>
+
+            <div class="card">
+                <h3>Customer Balances - Payable (Credit)</h3>
+                <table class="dashboard-table" id="payable-customers">
+                    <thead>
+                        <tr><th>Customer Name</th><th>Balance (₹)</th></tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+            
+            <div class="card">
+                <h3>Customer Balances - Receivable (Debit)</h3>
+                <table class="dashboard-table" id="receivable-customers">
+                    <thead>
+                        <tr><th>Customer Name</th><th>Balance (₹)</th></tr>
+                    </thead >
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="daybook" class="view">
+            <h2>📒 Daybook - Record Transaction</h2>
+            
+            <form id="daybook-form" class="card">
+                <div class="form-group"><label for="db-date">Date:</label><input type="date" id="db-date" required></div>
+                <div class="form-group"><label for="db-desc">Description:</label><input type="text" id="db-desc" required></div>
+                <div class="form-group">
+                    <label for="db-type">Transaction Type:</label>
+                    <select id="db-type" required>
+                        <option value="Income">Income (Payment Received)</option>
+                        <option value="Expense">Expense (Payment Made)</option>
+                        <option value="Purchase">Purchase (Expense)</option>
+                        <option value="Sale">Sale (Income)</option>
+                        <option value="Labour Wages">Labour Wages (Expense)</option>
+                    </select>
+                </div>
+                <div class="form-group"><label for="db-unit">Ton/Hr:</label><input type="number" id="db-unit" step="any" value="0" required></div>
+                <div class="form-group"><label for="db-rate">Rate:</label><input type="number" id="db-rate" step="any" value="0" required></div>
+                <div class="form-group"><label for="db-total">Total Amount (₹):</label><input type="number" id="db-total" step="any" required></div>
+                
+                <div class="form-group">
+                    <label for="db-party">Customer / Labourer:</label>
+                    <select id="db-party" required>
+                        <option value="N/A">N/A (Non-party related)</option>
+                        </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="db-given-by">Handled By:</label>
+                    <select id="db-given-by" required>
+                        <option value="None" selected>None</option>
+                        <option value="Preevan">Preevan</option>
+                        <option value="Tilson">Tilson</option>
+                        <option value="Anoop">Anoop</option>
+                        <option value="Bank">Bank</option>
+                    </select>
+                </div>
+                <div class="form-group"><button type="submit" class="button-primary">Save Transaction</button></div>
+            </form>
+
+            <div class="card">
+                <h3>All Transactions</h3>
+                <table id="daybook-data">
+                    <thead>
+                        <tr>
+                            <th>Date</th><th>Description</th><th>Type</th>
+                            <th>Ton/Hr</th><th>Rate</th><th>Total (₹)</th>
+                            <th>Party</th><th>Handled By</th><th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="ledger" class="view">
+            <h2>📜 Ledger - Party Details</h2>
+            
+            <div class="card">
+                <div class="form-group">
+                    <label for="ledger-party-select">Select Customer or Labourer:</label>
+                    <select id="ledger-party-select" style="width: 300px;">
+                        </select>
+                </div>
+                
+                <button onclick="printLedger()" class="button-primary">
+                    ⬇️ Download/Print Ledger
+                </button>
+
+                <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ecf0f1;">
+
+                <h3 id="ledger-party-name"></h3>
+                <p style="font-size: 1.2em; font-weight: bold;">Current Balance: <span id="ledger-balance" class="balance-positive">₹ 0.00</span></p>
+
+                <h3>Party Transactions</h3>
+                <table id="ledger-details">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Type</th>
+                            <th>Unit</th>
+                            <th>Rate</th>
+                            <th>Debit (₹)</th>
+                            <th>Credit (₹)</th>
+                            <th>Balance (₹)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div id="labour-wages" class="view">
+            <h2>💰 Labour Wages & Advances</h2>
+            
+            <div class="card">
+                <h3>Date Range Filter</h3>
+                <div id="date-range-controls">
+                    <div class="form-group">
+                        <label for="wages-start-date">Start Date:</label>
+                        <input type="date" id="wages-start-date">
+                    </div>
+                    <div class="form-group">
+                        <label for="wages-end-date">End Date:</label>
+                        <input type="date" id="wages-end-date">
+                    </div>
+                    <div class="form-group">
+                        <button onclick="renderLabourWages()" class="button-primary" style="margin-top: 26px;">Apply Filter</button>
+                    </div>
+                </div>
+
+                <button onclick="printLabourWagesReport()" class="button-primary" style="margin-bottom: 20px;">
+                    ⬇️ Download/Print Wages Report
+                </button>
+
+                <h3>Wages Summary (Current Filter)</h3>
+                <table id="wages-table">
+                    <thead>
+                        <tr>
+                            <th>Labour Name</th>
+                            <th>Total Wages Earned in Period (₹)</th>
+                            <th>Advances Given in Period (₹)</th>
+                            <th>All-time Balance Payable/Receivable (₹)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="wages-data-body">
+                        </tbody>
+                </table>
+                <p style="margin-top: 20px; color: #7f8c8d; font-style: italic;">
+                    "Total Wages Earned" comes from "Labour Wages" transactions in the Daybook. 
+                    "Advances Given" comes from "Expense" or "Purchase" transactions in the Daybook.
+                    The "All-time Balance" is the labourer's running balance across all transactions.
+                </p>
+            </div>
+        </div>
+
+
+        <div id="parties" class="view">
+            <h2>👥 Parties Management</h2>
+            
+            <form id="party-form" class="card">
+                <h3>Add New Party (Customer or Labourer)</h3>
+                 <div class="form-group">
+                    <label for="new-party-type">Party Type:</label>
+                    <select id="new-party-type" required>
+                        <option value="Customer">Customer</option>
+                        <option value="Labour">Labour</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="new-party-name">Name:</label>
+                    <input type="text" id="new-party-name" required>
+                </div>
+                <div class="form-group"><button type="submit" class="button-primary">Add Party</button></div>
+            </form>
+
+            <div class="card">
+                <h3>Existing Parties (Cloud-Synced)</h3>
+                <table id="parties-list">
+                    <thead>
+                        <tr><th>Name</th><th>Type</th><th>Action</th></tr>
+                    </thead>
+                    <tbody id="parties-data-body">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="app-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 2000; justify-content: center; align-items: center;">
+        <div id="modal-content" style="background: white; padding: 25px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); max-width: 400px; width: 90%; text-align: center;">
+            <p id="modal-message" style="margin-bottom: 20px; font-size: 1.1em;"></p>
+            <div id="modal-actions" style="display: flex; justify-content: center; gap: 10px;">
+                <button id="modal-confirm" class="button-delete" style="display: none; padding: 5px 10px; font-size: 0.9em;">Confirm</button>
+                <button id="modal-cancel" class="button-primary" style="display: none; padding: 5px 10px; font-size: 0.9em; background-color: #7f8c8d;">Cancel</button>
+                <button id="modal-ok" class="button-primary" style="padding: 5px 10px; font-size: 0.9em; margin: 0 auto;">OK</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // ** INTEGRATION CODE: Your Google Apps Script Web App URL **
+        const SPREADSHEET_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzpGGy9hG_hWDIWF2vzJfDfJUCe1RVqLFTzcmbY-b2WQG1Sbe0ZIbjpAocu1erC3dy0/exec';
+
+        const VIEWS = ['dashboard', 'daybook', 'ledger', 'labour-wages', 'parties'];
+        const HANDLERS = ['Preevan', 'Tilson', 'Anoop', 'Bank']; 
+        
+        // DOM Elements
+        const ownerBankBalancesTable = document.getElementById('owner-bank-balances').getElementsByTagName('tbody')[0];
+        const payableTable = document.getElementById('payable-customers').getElementsByTagName('tbody')[0];
+        const receivableTable = document.getElementById('receivable-customers').getElementsByTagName('tbody')[0];
+        const daybookDataBody = document.getElementById('daybook-data').getElementsByTagName('tbody')[0];
+        const ledgerDetailsBody = document.getElementById('ledger-details').getElementsByTagName('tbody')[0];
+        const wagesDataBody = document.getElementById('wages-data-body');
+        const partiesDataBody = document.getElementById('parties-data-body');
+        const profitLossDisplay = document.getElementById('profit-loss-display');
+        const stockAmountInput = document.getElementById('stock-amount-input');
+        const body = document.body;
+        
+        // --- Global State Variables (Now synced from Cloud) ---
+        let customers = [];
+        let labourers = [];
+        let transactions = [];
+        let stockAmount = 0;
+
+
+        // --- Utility Functions ---
+
+        function getPartyType(name) {
+            if (customers.includes(name)) return 'Customer';
+            if (labourers.includes(name)) return 'Labour';
+            return 'N/A';
+        }
+        
+        function formatCurrency(amount) {
+            return `₹ ${parseFloat(amount).toFixed(2)}`;
+        }
+
+        function refreshAllViews() {
+            renderParties();
+            updatePartyDropdowns();
+            renderDashboard(); 
+            renderDaybook(); 
+            renderLedger(); // Render Ledger again in case the selected party's data changed
+            renderLabourWages(); 
+        }
+
+        // --- Modal System ---
+
+        const appModal = document.getElementById('app-modal');
+        const modalMessage = document.getElementById('modal-message');
+        const modalOk = document.getElementById('modal-ok');
+        const modalConfirm = document.getElementById('modal-confirm');
+        const modalCancel = document.getElementById('modal-cancel');
+
+        function hideModal() {
+            appModal.style.display = 'none';
+        }
+
+        function showMessage(message) {
+            modalMessage.textContent = message;
+            modalOk.style.display = 'inline-block';
+            modalConfirm.style.display = 'none';
+            modalCancel.style.display = 'none';
+            modalOk.onclick = hideModal;
+            appModal.style.display = 'flex';
+        }
+
+        function showConfirmation(message, onConfirm) {
+            modalMessage.textContent = message;
+            modalOk.style.display = 'none';
+            modalConfirm.style.display = 'inline-block';
+            modalCancel.style.display = 'inline-block';
+
+            modalConfirm.onclick = () => {
+                hideModal();
+                onConfirm();
+            };
+            modalCancel.onclick = hideModal;
+
+            appModal.style.display = 'flex';
+        }
+
+
+        // --- Cloud Integration Functions (The core for real-time access) ---
+        
+        // Check if the script URL is set
+        function isCloudEnabled() {
+            if (!SPREADSHEET_WEB_APP_URL || SPREADSHEET_WEB_APP_URL.trim() === '') {
+                return false;
+            }
+            return true;
+        }
+
+        async function sendDataToSpreadsheet(payload) {
+            if (!isCloudEnabled()) {
+                return { success: false, message: 'Cloud sync is disabled. Please set the SPREADSHEET_WEB_APP_URL constant.' };
+            }
+            
+            try {
+                // Display a temporary loading message for better UX
+                const originalMessage = profitLossDisplay.textContent;
+                profitLossDisplay.textContent = 'Saving...';
+                
+                const response = await fetch(SPREADSHEET_WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'cors', 
+                    cache: 'no-cache',
+                    headers: {
+                        'Content-Type': 'text/plain' 
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                // Restore original message 
+                profitLossDisplay.textContent = originalMessage;
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.status === 'Success') {
+                    return { success: true, ...result };
+                } else {
+                    return { success: false, message: `Sheet Script Error: ${result.message}` };
+                }
+
+            } catch (error) {
+                console.error("Error saving to cloud:", error);
+                // Return a more user-friendly connection error message
+                return { success: false, message: `Failed to connect or process remote save. Check network or script URL/deployment. Error: ${error.message}` };
+            }
+        }
+
+        async function fetchInitialDataFromCloud() {
+            if (!isCloudEnabled()) {
+                showMessage("Cloud Sync is **DISABLED**. Please enter a valid Google Apps Script URL in the SPREADSHEET_WEB_APP_URL constant to enable data persistence.");
+                return;
+            }
+            
+            try {
+                // Display loading state
+                profitLossDisplay.textContent = 'Fetching data from cloud...';
+                
+                const response = await fetch(`${SPREADSHEET_WEB_APP_URL}?action=getAllData`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                
+                // Reset loading state message
+                profitLossDisplay.textContent = 'Loading P/L...';
+
+
+                if (data.status === 'Success') {
+                    // Update global state
+                    customers = Array.isArray(data.customers) ? data.customers.sort() : [];
+                    labourers = Array.isArray(data.labourers) ? data.labourers.sort() : [];
+                    // Ensure 'serverIndex' is converted to number for consistent handling
+                    transactions = Array.isArray(data.transactions) ? data.transactions.map(t => ({
+                        ...t,
+                        // Ensure numerical properties are parsed correctly
+                        unit: parseFloat(t.unit) || 0,
+                        rate: parseFloat(t.rate) || 0,
+                        total: parseFloat(t.total) || 0,
+                        serverIndex: Number(t.serverIndex) 
+                    })).sort((a, b) => new Date(a.date) - new Date(b.date)) : [];
+                    
+                    stockAmount = parseFloat(data.stockAmount) || 0;
+
+                    // Set initial state for inputs
+                    stockAmountInput.value = stockAmount.toFixed(2);
+                    document.getElementById('db-date').valueAsDate = new Date(); 
+
+                    // Render all views with fresh data
+                    refreshAllViews();
+                    
+                    showMessage("All data successfully synced from Google Sheet!");
+                } else {
+                    showMessage(`Failed to load data: ${data.message}. Using default empty state. Please check your script's logs.`);
+                }
+
+            } catch (error) {
+                console.error("Critical error during initial data fetch:", error);
+                // Fallback to empty state and show error
+                showMessage(`**Critical Connection Error.** Failed to fetch data. Please verify your script URL and ensure it is deployed correctly. Error: ${error.message}`);
+            }
+        }
+
+        // --- Stock Handling ---
+        
+        async function saveStockAmount(amount) {
+            const payload = { 
+                action: 'updateStock', 
+                amount: parseFloat(amount).toFixed(2) 
+            };
+            
+            const result = await sendDataToSpreadsheet(payload);
+            
+            if (result.success) {
+                stockAmount = parseFloat(amount) || 0;
+                renderDashboard();
+                showMessage("Stock value saved to cloud and Dashboard recalculated.");
+            } else {
+                showMessage(`Failed to save stock amount to cloud: ${result.message}`);
+            }
+        }
+
+        document.getElementById('stock-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newStock = parseFloat(stockAmountInput.value);
+            if (isNaN(newStock) || newStock < 0) {
+                showMessage("Please enter a valid, non-negative stock amount.");
+                return;
+            }
+            saveStockAmount(newStock);
+        });
+        
+        // --- Delete Party Function ---
+        function deleteParty(name) {
+            
+            // Check for outstanding transactions
+            const hasTransactions = transactions.some(t => t.party === name);
+
+            if (hasTransactions) {
+                showMessage(`Cannot delete party "${name}". They have existing transactions in the Daybook. Please delete all their transactions first.`);
+                return;
+            }
+
+            showConfirmation(`Are you sure you want to permanently remove "${name}"? This action is permanent and cannot be undone.`, async () => {
+                const payload = { action: 'deleteParty', name: name };
+                const result = await sendDataToSpreadsheet(payload);
+
+                if (result.success) {
+                    // Update local state after successful cloud delete
+                    customers = customers.filter(c => c !== name);
+                    labourers = labourers.filter(l => l !== name);
+                    showMessage(`Party "${name}" deleted successfully from the cloud.`);
+                    refreshAllViews();
+                } else {
+                    showMessage(`Failed to delete party from cloud: ${result.message}`);
+                }
+            });
+        }
+
+
+        // --- Delete Transaction Function ---
+        async function deleteTransaction(serverIndex) {
+            showConfirmation("Are you sure you want to permanently delete this transaction? This action cannot be undone.", async () => {
+                const payload = { action: 'deleteTransaction', index: serverIndex };
+                const result = await sendDataToSpreadsheet(payload);
+
+                if (result.success) {
+                    // Update local state after successful cloud delete
+                    transactions = transactions.filter(t => Number(t.serverIndex) !== serverIndex);
+                    showMessage("Transaction deleted successfully from the cloud!");
+                    refreshAllViews();
+                } else {
+                    showMessage(`Failed to delete transaction: ${result.message}`);
+                }
+            });
+        }
+
+
+        // --- Mobile Navigation Logic ---
+        function closeSidebar() {
+            body.classList.remove('sidebar-open');
+        }
+
+        document.getElementById('menu-toggle').addEventListener('click', () => {
+            body.classList.toggle('sidebar-open');
+        });
+        
+        document.getElementById('mobile-backdrop').addEventListener('click', closeSidebar);
+
+        document.getElementById('nav-menu').addEventListener('click', (e) => {
+            if (e.target.tagName === 'A') {
+                e.preventDefault();
+                const targetView = e.target.getAttribute('data-view');
+                
+                VIEWS.forEach(view => {
+                    document.getElementById(view).style.display = 'none';
+                    document.querySelector(`[data-view="${view}"]`).classList.remove('active');
+                });
+                
+                document.getElementById(targetView).style.display = 'block';
+                e.target.classList.add('active');
+                
+                closeSidebar(); 
+
+                // Re-render specific view content to ensure freshness
+                if (targetView === 'dashboard') renderDashboard();
+                if (targetView === 'daybook') renderDaybook();
+                if (targetView === 'ledger') renderLedger();
+                if (targetView === 'labour-wages') renderLabourWages();
+                if (targetView === 'parties') renderParties();
+            }
+        });
+
+        // --- Core Functions: Balances and Formatting ---
+
+        function calculateBalances() {
+            const customerBalances = {};
+            const labourBalances = {};
+            const ownerBankBalances = { 'Preevan': 0, 'Tilson': 0, 'Anoop': 0, 'Bank': 0 }; 
+
+            customers.forEach(cust => customerBalances[cust] = 0);
+            labourers.forEach(lab => labourBalances[lab] = 0);
+
+            transactions.forEach(t => {
+                // Ensure values are numbers from cloud data
+                const total = parseFloat(t.total);
+                const partyType = getPartyType(t.party);
+
+                // 1. Update Owner/Bank Balances
+                if (HANDLERS.includes(t.handledBy)) {
+                    if (t.type === 'Income' || t.type === 'Sale') {
+                        ownerBankBalances[t.handledBy] += total;
+                    } else if (t.type === 'Expense' || t.type === 'Purchase' || t.type === 'Labour Wages') {
+                        ownerBankBalances[t.handledBy] -= total;
+                    }
+                }
+
+                // 2. Update Customer Balances (Positive = Customer Owes US / Receivable)
+                if (partyType === 'Customer') {
+                    if (t.type === 'Sale') customerBalances[t.party] += total; 
+                    else if (t.type === 'Income' || t.type === 'Purchase' || t.type === 'Expense') {
+                        customerBalances[t.party] -= total; 
+                    }
+                } 
+                
+                // 3. Update Labour Balances (Positive = Labour Owes US / Advance / Debit)
+                else if (partyType === 'Labour') {
+                    if (t.type === 'Expense' || t.type === 'Purchase') {
+                        labourBalances[t.party] += total; 
+                    } 
+                    else if (t.type === 'Labour Wages' || t.type === 'Income') {
+                        labourBalances[t.party] -= total;
+                    }
+                }
+            });
+
+            return { ownerBankBalances, customerBalances, labourBalances };
+        }
+        
+        // --- View Renderers ---
+
+        function renderDashboard() {
+            const { ownerBankBalances, customerBalances, labourBalances } = calculateBalances();
+            
+            let totalCashBalance = 0;
+            let totalReceivable = 0;
+            let totalPayable = 0;
+
+            // 1. Owner/Bank Balances
+            ownerBankBalancesTable.innerHTML = '';
+            HANDLERS.forEach(handler => {
+                const balance = ownerBankBalances[handler];
+                totalCashBalance += balance;
+
+                const row = ownerBankBalancesTable.insertRow();
+                row.insertCell(0).textContent = handler;
+                row.insertCell(1).textContent = formatCurrency(balance);
+            });
+
+            // 2. Customer Payables/Receivables
+            const customerData = Object.entries(customerBalances).map(([name, balance]) => ({ name, balance }));
+
+            const payableList = customerData
+                .filter(c => c.balance < 0)
+                .sort((a, b) => a.balance - b.balance); 
+
+            payableTable.innerHTML = '';
+            payableList.forEach(c => {
+                totalPayable += Math.abs(c.balance);
+                const row = payableTable.insertRow();
+                row.insertCell(0).textContent = c.name;
+                row.insertCell(1).textContent = formatCurrency(Math.abs(c.balance)); 
+            });
+
+            const receivableList = customerData
+                .filter(c => c.balance > 0)
+                .sort((a, b) => b.balance - a.balance); 
+
+            receivableTable.innerHTML = '';
+            receivableList.forEach(c => {
+                totalReceivable += c.balance;
+                const row = receivableTable.insertRow();
+                row.insertCell(0).textContent = c.name;
+                row.insertCell(1).textContent = formatCurrency(c.balance);
+            });
+
+            // 3. Labourers for P/L Calculation 
+            Object.entries(labourBalances).forEach(([name, balance]) => {
+                if (balance > 0) { // Labourer owes us (Advance)
+                    totalReceivable += balance;
+                } else if (balance < 0) { // We owe Labourer (Wages Due)
+                    totalPayable += Math.abs(balance);
+                }
+            });
+
+
+            // 4. Calculate Final Profit/Loss
+            const currentStock = stockAmount;
+            const profitLoss = totalCashBalance + currentStock + totalReceivable - totalPayable;
+
+            // 5. Update P/L Display
+            profitLossDisplay.textContent = `P/L: ${formatCurrency(Math.abs(profitLoss))} (${profitLoss >= 0 ? 'Profit' : 'Loss'})`;
+            profitLossDisplay.classList.remove('profit', 'loss', 'zero-balance');
+            
+            if (profitLoss > 0) {
+                profitLossDisplay.classList.add('profit');
+            } else if (profitLoss < 0) {
+                profitLossDisplay.classList.add('loss');
+            } else {
+                profitLossDisplay.classList.add('zero-balance');
+                profitLossDisplay.textContent = `P/L: ${formatCurrency(0)} (Balanced)`;
+            }
+
+            // 6. Update Stock Input Field
+            stockAmountInput.value = currentStock.toFixed(2);
+        }
+        
+        function updatePartyDropdowns() {
+            customers.sort();
+            labourers.sort();
+            
+            const allParties = [
+                ...customers.map(name => ({ name, type: 'Customer' })),
+                ...labourers.map(name => ({ name, type: 'Labour' }))
+            ].sort((a, b) => a.name.localeCompare(b.name));
+            
+            const partyOptions = allParties.map(p => `<option value="${p.name}">${p.name} (${p.type})</option>`).join('');
+            
+            // Daybook dropdown
+            const daybookDropdown = document.getElementById('db-party');
+            daybookDropdown.innerHTML = '<option value="N/A">N/A (Non-party related)</option>' + partyOptions;
+
+            // Ledger dropdown
+            const ledgerDropdown = document.getElementById('ledger-party-select');
+            const currentLedgerSelection = ledgerDropdown.value;
+            ledgerDropdown.innerHTML = '<option value="">-- Select Party --</option>' + partyOptions;
+
+            if (currentLedgerSelection && allParties.some(p => p.name === currentLedgerSelection)) {
+                ledgerDropdown.value = currentLedgerSelection;
+            } else if (allParties.length > 0) {
+                ledgerDropdown.value = allParties[0].name;
+            } else {
+                ledgerDropdown.value = '';
+            }
+
+            if (ledgerDropdown.value) {
+                renderLedger();
+            } else {
+                document.getElementById('ledger-party-name').textContent = 'No Party Selected';
+                document.getElementById('ledger-balance').textContent = formatCurrency(0);
+                document.getElementById('ledger-balance').classList.remove('balance-positive', 'balance-negative');
+                ledgerDetailsBody.innerHTML = '';
+            }
+        }
+
+        function renderDaybook() {
+            updatePartyDropdowns();
+            
+            daybookDataBody.innerHTML = '';
+            // Display transactions in reverse order (most recent first)
+            transactions.slice().reverse().forEach(t => {
+                
+                const row = daybookDataBody.insertRow();
+                row.insertCell(0).textContent = t.date;
+                row.insertCell(1).textContent = t.description;
+                row.insertCell(2).textContent = t.type;
+                row.insertCell(3).textContent = parseFloat(t.unit).toFixed(2);
+                row.insertCell(4).textContent = parseFloat(t.rate).toFixed(2);
+                row.insertCell(5).textContent = formatCurrency(t.total);
+                row.insertCell(6).textContent = t.party; 
+                row.insertCell(7).textContent = t.handledBy;
+                
+                const actionCell = row.insertCell(8);
+                actionCell.style.textAlign = 'center';
+                // Use t.serverIndex for cloud deletion
+                actionCell.innerHTML = `<button class="button-delete" style="padding: 5px 10px; font-size: 0.9em;" onclick="deleteTransaction(${t.serverIndex})">Delete</button>`;
+            });
+        }
+
+        function renderLedger() {
+            const selectedParty = document.getElementById('ledger-party-select').value;
+            ledgerDetailsBody.innerHTML = '';
+            
+            const ledgerBalanceSpan = document.getElementById('ledger-balance');
+
+            document.getElementById('ledger-party-name').textContent = selectedParty ? `Party: ${selectedParty} (${getPartyType(selectedParty)})` : 'No Party Selected';
+            ledgerBalanceSpan.textContent = formatCurrency(0);
+            ledgerBalanceSpan.classList.remove('balance-positive', 'balance-negative');
+
+
+            if (!selectedParty || selectedParty === 'N/A') return;
+
+            const partyType = getPartyType(selectedParty);
+            const partyTransactions = transactions
+                .filter(t => t.party === selectedParty)
+                .sort((a, b) => new Date(a.date) - new Date(b.date)); 
+
+            let runningBalance = 0;
+            const { customerBalances, labourBalances } = calculateBalances(); 
+            const isCustomer = partyType === 'Customer';
+
+            partyTransactions.forEach(t => {
+                const total = parseFloat(t.total);
+                let debit = 0; 
+                let credit = 0; 
+
+                if (isCustomer) {
+                    if (t.type === 'Sale') { debit = total; runningBalance += total; } 
+                    else if (t.type === 'Income' || t.type === 'Purchase' || t.type === 'Expense') { credit = total; runningBalance -= total; }
+                } else {
+                    if (t.type === 'Expense' || t.type === 'Purchase') { debit = total; runningBalance += total; }
+                    else if (t.type === 'Labour Wages' || t.type === 'Income') { credit = total; runningBalance -= total; }
+                }
+
+                const row = ledgerDetailsBody.insertRow();
+                row.insertCell(0).textContent = t.date;
+                row.insertCell(1).textContent = t.description;
+                row.insertCell(2).textContent = t.type;
+                
+                row.insertCell(3).textContent = parseFloat(t.unit).toFixed(2); 
+                row.insertCell(4).textContent = parseFloat(t.rate).toFixed(2);
+                
+                row.insertCell(5).textContent = debit > 0 ? formatCurrency(debit) : '-'; 
+                row.insertCell(6).textContent = credit > 0 ? formatCurrency(credit) : '-'; 
+                row.insertCell(7).textContent = formatCurrency(runningBalance);
+            });
+            
+            const finalBalance = isCustomer ? customerBalances[selectedParty] : labourBalances[selectedParty];
+            
+            ledgerBalanceSpan.textContent = formatCurrency(Math.abs(finalBalance));
+            if (finalBalance < 0) {
+                 ledgerBalanceSpan.classList.add('balance-negative');
+                 ledgerBalanceSpan.textContent += isCustomer ? ' (Payable)' : ' (Wages Due)';
+            } else if (finalBalance > 0) {
+                ledgerBalanceSpan.classList.add('balance-positive');
+                ledgerBalanceSpan.textContent += isCustomer ? ' (Receivable)' : ' (Advance Outstanding)';
+            } else {
+                ledgerBalanceSpan.textContent = formatCurrency(0);
+            }
+        }
+        
+        function renderLabourWages() {
+            // Get date inputs and normalize dates for comparison
+            const startDateStr = document.getElementById('wages-start-date').value;
+            const endDateStr = document.getElementById('wages-end-date').value;
+            
+            if (!startDateStr || !endDateStr) return;
+
+            const startDate = new Date(startDateStr);
+            const endDate = new Date(endDateStr);
+            endDate.setHours(23, 59, 59, 999); 
+            
+            const { labourBalances } = calculateBalances();
+            
+            wagesDataBody.innerHTML = '';
+            
+            const periodDataByLabour = {};
+            labourers.forEach(lab => periodDataByLabour[lab] = { wages: 0, advances: 0 });
+            
+            transactions.forEach(t => {
+                const partyType = getPartyType(t.party);
+                if (partyType !== 'Labour') return;
+                
+                const tDate = new Date(t.date);
+                
+                if (tDate >= startDate && tDate <= endDate) {
+                    const total = parseFloat(t.total);
+                    
+                    if (t.type === 'Labour Wages') {
+                        periodDataByLabour[t.party].wages += total;
+                    } else if (t.type === 'Expense' || t.type === 'Purchase') {
+                        periodDataByLabour[t.party].advances += total;
+                    }
+                }
+            });
+            
+            if (labourers.length === 0) {
+                wagesDataBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No labourers added yet.</td></tr>';
+                return;
+            }
+
+            labourers.forEach(labourName => {
+                const totalWagesEarned = periodDataByLabour[labourName].wages;
+                const advancesGivenInPeriod = periodDataByLabour[labourName].advances;
+                
+                const runningBalance = labourBalances[labourName] || 0; 
+                
+                let balanceText;
+                if (runningBalance < 0) {
+                     // Negative: Sawmill owes labourer (Payable)
+                    balanceText = `<span class="balance-negative" style="font-size: 1em;">${formatCurrency(Math.abs(runningBalance))} (Wages Due)</span>`;
+                } else if (runningBalance > 0) {
+                    // Positive: Labourer owes Sawmill (Advance Outstanding)
+                    balanceText = `<span class="balance-positive" style="font-size: 1em;">${formatCurrency(runningBalance)} (Advance)</span>`;
+                } else {
+                    balanceText = formatCurrency(0);
+                }
+
+
+                const row = wagesDataBody.insertRow();
+                row.insertCell(0).textContent = labourName;
+                row.insertCell(1).textContent = formatCurrency(totalWagesEarned); 
+                row.insertCell(2).textContent = formatCurrency(advancesGivenInPeriod); 
+                row.insertCell(3).innerHTML = balanceText;
+            });
+        }
+        
+        function renderParties() {
+            partiesDataBody.innerHTML = '';
+            
+            const allParties = [
+                ...customers.map(name => ({ name, type: 'Customer' })),
+                ...labourers.map(name => ({ name, type: 'Labour' }))
+            ].sort((a, b) => a.name.localeCompare(b.name));
+
+            allParties.forEach(p => {
+                const row = partiesDataBody.insertRow();
+                row.insertCell(0).textContent = p.name;
+                row.insertCell(1).textContent = p.type;
+                
+                const actionCell = row.insertCell(2);
+                // Added Delete button logic
+                actionCell.innerHTML = `<button class="button-delete" onclick="deleteParty('${p.name}')">Remove</button>`;
+            });
+
+            if (allParties.length === 0) {
+                partiesDataBody.innerHTML = '<tr><td colspan="3" style="text-align: center;">No parties added yet.</td></tr>';
+            }
+        }
+        
+        // --- Print Functions (Unchanged) ---
+        
+        function printDashboard() {
+            const printWindow = window.open('', '', 'height=800,width=800');
+            printWindow.document.write('<html><head><title>Dashboard Printout</title>');
+            printWindow.document.write('<style>');
+            printWindow.document.write('body { font-family: Arial, sans-serif; padding: 20px; }');
+            printWindow.document.write('h1 { color: #2c3e50; border-bottom: 2px solid #ccc; padding-bottom: 5px; }');
+            printWindow.document.write('h2 { color: #34495e; margin-top: 20px; margin-bottom: 10px; font-size: 1.2em; }');
+            printWindow.document.write('#profit-loss-display { font-size: 1.8em; font-weight: bold; padding: 10px; margin-bottom: 20px; text-align: center; color: white; border-radius: 4px; }');
+            printWindow.document.write('.profit { background-color: #27ae60; } .loss { background-color: #e74c3c; } .zero-balance { background-color: #7f8c8d; }');
+            printWindow.document.write('table, th, td { border: 1px solid #333; border-collapse: collapse; padding: 10px; text-align: left; width: 100%; font-size: 10pt; margin-bottom: 20px; }');
+            printWindow.document.write('th { background-color: #f1f5f8; }');
+            printWindow.document.write('</style>');
+            printWindow.document.write('</head><body>');
+            
+            printWindow.document.write(`<h1>TVK Sawmill - Dashboard Report</h1>`);
+            
+            const plDisplay = document.getElementById('profit-loss-display');
+            printWindow.document.write(`<div id="profit-loss-display" class="${plDisplay.className.includes('profit') ? 'profit' : plDisplay.className.includes('loss') ? 'loss' : 'zero-balance'}">${plDisplay.textContent}</div>`);
+            
+            const currentStockValue = document.getElementById('stock-amount-input').value;
+            printWindow.document.write(`<h2>Stock Amount (Asset)</h2><p>Current Value of Inventory/Stock: ${formatCurrency(currentStockValue)}</p>`);
+
+            printWindow.document.write(`<h2>Cash/Bank Balances</h2>`);
+            printWindow.document.write(document.getElementById('owner-bank-balances').outerHTML);
+
+            printWindow.document.write(`<h2>Customer Balances - Payable (Credit)</h2>`);
+            printWindow.document.write(document.getElementById('payable-customers').outerHTML);
+
+            printWindow.document.write(`<h2>Customer Balances - Receivable (Debit)</h2>`);
+            printWindow.document.write(document.getElementById('receivable-customers').outerHTML);
+            
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        function printLedger() {
+            const partyName = document.getElementById('ledger-party-name').textContent;
+            const balance = document.getElementById('ledger-balance').textContent;
+            const detailsTable = document.getElementById('ledger-details').outerHTML;
+            
+            const printWindow = window.open('', '', 'height=600,width=800');
+            printWindow.document.write('<html><head><title>Ledger Printout</title>');
+            printWindow.document.write('<style>');
+            printWindow.document.write('body { font-family: Arial, sans-serif; padding: 20px; }');
+            printWindow.document.write('h1 { color: #2c3e50; border-bottom: 2px solid #ccc; padding-bottom: 5px; }');
+            printWindow.document.write('h2 { color: #34495e; margin-bottom: 5px; }');
+            printWindow.document.write('table, th, td { border: 1px solid #333; border-collapse: collapse; padding: 10px; text-align: left; width: 100%; font-size: 10pt; }');
+            printWindow.document.write('th { background-color: #f1f5f8; }');
+            printWindow.document.write('</style>');
+            printWindow.document.write('</head><body>');
+            
+            printWindow.document.write(`<h1>TVK Sawmill - Party Ledger</h1>`);
+            printWindow.document.write(`<h2>${partyName}</h2>`);
+            printWindow.document.write(`<p style="font-size: 1.2em; font-weight: bold;">Current Balance: ${balance}</p>`);
+            printWindow.document.write(detailsTable);
+            
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.print();
+        }
+        
+        function printLabourWagesReport() {
+            const startDateStr = document.getElementById('wages-start-date').value;
+            const endDateStr = document.getElementById('wages-end-date').value;
+            const wagesTableHtml = document.getElementById('wages-table').outerHTML;
+
+            const printWindow = window.open('', '', 'height=600,width=800');
+            printWindow.document.write('<html><head><title>Labour Wages Report Printout</title>');
+            printWindow.document.write('<style>');
+            printWindow.document.write('body { font-family: Arial, sans-serif; padding: 20px; }');
+            printWindow.document.write('h1 { color: #2c3e50; border-bottom: 2px solid #ccc; padding-bottom: 5px; }');
+            printWindow.document.write('h2 { color: #34495e; margin-bottom: 5px; }');
+            printWindow.document.write('table, th, td { border: 1px solid #333; border-collapse: collapse; padding: 10px; text-align: left; width: 100%; font-size: 10pt; }');
+            printWindow.document.write('th { background-color: #f1f5f8; }');
+            printWindow.document.write('.balance-positive { color: #27ae60; } .balance-negative { color: #e74c3c; }');
+            printWindow.document.write('</style>');
+            printWindow.document.write('</head><body>');
+            
+            printWindow.document.write(`<h1>TVK Sawmill - Labour Wages Report</h1>`);
+            printWindow.document.write(`<h2>Filter Period: ${startDateStr} to ${endDateStr}</h2>`);
+            printWindow.document.write(wagesTableHtml);
+            printWindow.document.write('<p style="margin-top: 20px; color: #7f8c8d; font-style: italic;">"Total Wages Earned" comes from "Labour Wages" transactions in the Daybook. "Advances Given" comes from "Expense" or "Purchase" transactions in the Daybook. The "All-time Balance" is the labourer\'s running balance across all transactions.</p>');
+            
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        // --- Form Submissions ---
+
+        document.getElementById('daybook-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const total = parseFloat(document.getElementById('db-total').value);
+            if (isNaN(total) || total <= 0) {
+                showMessage('Please enter a valid Total Amount (greater than 0).');
+                return;
+            }
+
+            const newTransaction = {
+                date: document.getElementById('db-date').value,
+                description: document.getElementById('db-desc').value,
+                type: document.getElementById('db-type').value,
+                unit: document.getElementById('db-unit').value,
+                rate: document.getElementById('db-rate').value,
+                total: total.toFixed(2),
+                party: document.getElementById('db-party').value, 
+                handledBy: document.getElementById('db-given-by').value
+            };
+            
+            // Validation checks remain the same
+            if (newTransaction.type === 'Labour Wages' && getPartyType(newTransaction.party) !== 'Labour') {
+                showMessage('The "Labour Wages" transaction type must be assigned to a Labourer.');
+                return;
+            }
+
+            if ((newTransaction.type === 'Expense' || newTransaction.type === 'Purchase') && getPartyType(newTransaction.party) === 'Labour' && newTransaction.handledBy === 'None') {
+                showMessage('Advances (Expense/Purchase) given to a Labourer must be assigned to a "Handled By" account (Preevan, Tilson, Anoop, or Bank).');
+                return;
+            }
+            
+            // Send to Google Sheet
+            const payload = { action: 'addTransaction', transactions: [newTransaction] };
+            const sheetResult = await sendDataToSpreadsheet(payload);
+            
+            
+            // Update UI and reset form
+            document.getElementById('daybook-form').reset();
+            document.getElementById('db-given-by').value = 'None'; 
+            document.getElementById('db-date').valueAsDate = new Date(); 
+            
+            let message = '';
+            if (sheetResult.success) {
+                // Add the new transaction to the local array with the server-side index
+                transactions.push({ ...newTransaction, serverIndex: sheetResult.serverIndex });
+                transactions.sort((a, b) => new Date(a.date) - new Date(b.date));
+                message = `Transaction saved successfully! Data is live-synced to Google Sheet (Row ${sheetResult.serverIndex}).`;
+                refreshAllViews();
+            } else {
+                message = `Remote save: FAILED. (${sheetResult.message}) Please verify your script deployment.`;
+            }
+            
+            showMessage(message); 
+        });
+
+        document.getElementById('party-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newName = document.getElementById('new-party-name').value.trim();
+            const newType = document.getElementById('new-party-type').value;
+
+            if (!newName) {
+                showMessage('Please enter a name for the party.');
+                return;
+            }
+
+            const allExisting = [...customers, ...labourers];
+            if (allExisting.includes(newName)) {
+                showMessage(`Party "${newName}" already exists.`);
+                return;
+            }
+            
+            // Send to Google Sheet
+            const payload = { action: 'addParty', name: newName, type: newType };
+            const result = await sendDataToSpreadsheet(payload);
+
+            if (result.success) {
+                // Update local state after successful cloud save
+                if (newType === 'Customer') {
+                    customers.push(newName);
+                } else if (newType === 'Labour') {
+                    labourers.push(newName);
+                }
+                
+                document.getElementById('party-form').reset();
+                showMessage(`${newType} ${newName} added and synced to cloud!`);
+                refreshAllViews();
+            } else {
+                showMessage(`Failed to add party: ${result.message}`);
+            }
+        });
+        
+        document.getElementById('ledger-party-select').addEventListener('change', renderLedger);
+        
+        // --- Initial Load ---
+        
+        function initialLoad() {
+            const today = new Date();
+            const threeMonthsAgo = new Date(today);
+            threeMonthsAgo.setMonth(today.getMonth() - 3); 
+            
+            document.getElementById('wages-end-date').valueAsDate = today;
+            document.getElementById('wages-start-date').valueAsDate = threeMonthsAgo; 
+            
+            fetchInitialDataFromCloud();
+
+            VIEWS.filter(v => v !== 'dashboard').forEach(v => document.getElementById(v).style.display = 'none');
+        }
+
+        initialLoad();
+    </script>
+
+</body>
+</html>
